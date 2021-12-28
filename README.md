@@ -25,7 +25,7 @@ To deploy to AWS successfully:
 
     - `API_KEY`: set to the RapidAPI key you receive
     - `MWDynamoTable`: set to the name of a DynamoDB table you created
-    - `ryanMWBucketARN`: set to the ARN of the bucket where you'd like to dump data
+    - `MWBucketARN`: set to the ARN of the bucket where you'd like to dump data
 
 
 7. Configure a blank test event to be able to test the script. The reason the test event can be blank here is that the function does not perform any actions with data from the event. 

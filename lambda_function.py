@@ -73,7 +73,7 @@ class Contacter:
         """
         
         s3 = boto3.client('s3')
-        s3_args = {'Body':bytes(json.dumps(uploadable_data),'utf-8'), 'Bucket':os.environ.get('ryanMWBucketARN').split(':')[-1], 'Key':desired_name, 'ContentType':'application/json'}
+        s3_args = {'Body':bytes(json.dumps(uploadable_data),'utf-8'), 'Bucket':os.environ.get('MWBucketARN').split(':')[-1], 'Key':desired_name, 'ContentType':'application/json'}
         s3.put_object(**s3_args)
         print('successful upload to bucket')
 
