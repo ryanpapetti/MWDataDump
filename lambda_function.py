@@ -4,7 +4,7 @@ MWDataDump
 Code to run a periodic data dump of Modern Warfare data
 '''
 
-import requests, os, boto3, json, time
+import urllib3, os, boto3, json, time
 
 
 class Contacter:
@@ -18,7 +18,7 @@ class Contacter:
             api_key (str): api key from rapidapi app
         """
         self._gamer_tag = gamer_tag
-        self._session = requests.session()
+        self._session = urllib3.PoolManager()
         self._api_key = api_key
         self._platform = platform #can change to any platform
         self.api_host = 'call-of-duty-modern-warfare.p.rapidapi.com'
@@ -38,12 +38,11 @@ class Contacter:
             dict: JSON of response
         """
         final_url = self.base_url + endpoint
-        response = self._session.get(final_url, headers = self._auth_header)
-        print(response.json())
+        response = self._session.request("GET",final_url, headers = self._auth_header)
         try:
-            assert response.status_code // 100 == 2
-            assert 'matches' in response.json()
-            return response.json()
+            assert response.status // 100 == 2
+            assert 'matches' in json.loads(response.data.decode('utf-8'))
+            return json.loads(response.data.decode('utf-8'))
         except AssertionError:
             raise AssertionError('RESPONSE IS NOT VALID')
 
