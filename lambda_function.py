@@ -4,7 +4,7 @@ MWDataDump
 Code to run a periodic data dump of Modern Warfare data
 '''
 
-import urllib3, os, boto3, json, time
+import urllib3, os, boto3, json, time, logging
 
 
 class Contacter:
@@ -14,13 +14,20 @@ class Contacter:
 
         Args:
             gamer_tag (str): specific gamer tag to retrieve data
-            platform (str): platform where gamer tag is present
+            platform (str): platform where gamer tag is present and must be one of the following: 
+            - psn (PlayStation)
+            - steam (Steam)
+            - battle (BattleNET)
+            - xbl (XBOX)
+            - acti (Activision ID)
+            - uno (numerical representation of Activision ID)
+
             api_key (str): api key from rapidapi app
         """
-        self._gamer_tag = gamer_tag
+        self._gamer_tag = gamer_tag #user gamer tag and must be platform specific 
+        self._platform = platform #must be an allowable platform from the API
         self._session = urllib3.PoolManager()
         self._api_key = api_key
-        self._platform = platform #can change to any platform
         self.api_host = 'call-of-duty-modern-warfare.p.rapidapi.com'
         self.base_url = f'https://{self.api_host}'
         self._auth_header = {'x-rapidapi-host':self.api_host, 'x-rapidapi-key':self._api_key}
@@ -39,10 +46,12 @@ class Contacter:
         """
         final_url = self.base_url + endpoint
         response = self._session.request("GET",final_url, headers = self._auth_header)
+        response_data = json.loads(response.data.decode('utf-8'))
+        logging.info(response_data)
         try:
             assert response.status // 100 == 2
-            assert 'matches' in json.loads(response.data.decode('utf-8'))
-            return json.loads(response.data.decode('utf-8'))
+            assert 'matches' in response_data
+            return response_data
         except AssertionError:
             raise AssertionError('RESPONSE IS NOT VALID')
 
@@ -74,7 +83,7 @@ class Contacter:
         s3 = boto3.client('s3')
         s3_args = {'Body':bytes(json.dumps(uploadable_data),'utf-8'), 'Bucket':os.environ.get('MWBucketARN').split(':')[-1], 'Key':desired_name, 'ContentType':'application/json'}
         s3.put_object(**s3_args)
-        print('successful upload to bucket')
+        logging.info('successful upload to bucket')
 
         
     def upload_to_dynamodb_table(self,uploadable_data:list,table_name:str):
@@ -103,7 +112,7 @@ class Contacter:
             #add to table
             active_table.put_item(Item = new_item)
 
-        print('successfully uploaded data to table')
+        logging.info('successfully uploaded data to table')
     
 
 
@@ -113,6 +122,8 @@ def lambda_handler(event,context):
     
     DEFAULT MAIN FUNCTION FOR LAMBDAD ON AWS. ARGS ARE IRRELEVANT AS OF NOW
     """
+
+    #it's possible to store these as environment variables, but they are here for demonstration
     chosen_gamertag = 'StonedTensor%235316760'
     chosen_platform = 'acti'
     chosen_api_key = os.environ.get('API_KEY')
@@ -121,5 +132,5 @@ def lambda_handler(event,context):
     most_recent_matches = ry_contacter.get_recent_match_summaries()
     ry_contacter.upload_data_to_bucket(most_recent_matches,str(int(time.time())))
     ry_contacter.upload_to_dynamodb_table(most_recent_matches,os.environ.get('MWDynamoTable'))
-    print('SUCCESS')
+    logging.info('SUCCESS')
     return {'status_code':200, 'body':json.dumps('SUCCESS')}
