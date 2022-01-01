@@ -2,7 +2,7 @@
 ## Ryan Papetti
 ## 2021
 
-This repository contains a script that is meant to be packaged and delivered to AWS Lambda to periodically collect Call of Duty Modern Warfare data via their RAPIDAPI interface. 
+This repository contains a script that is meant to be packaged and delivered to AWS Lambda to periodically collect Call of Duty Modern Warfare data via their RapidAPI interface. 
 
 
 `lambda_function.py` is the only script required and contains code to contact RAPIDAPI endpoint, gather data, and dump it to an appropriate S3 bucket and DynamoDB table. 
