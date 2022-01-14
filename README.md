@@ -1,6 +1,6 @@
 # Modern Warfare Periodic Data Dump with AWS
 ## Ryan Papetti
-## 2021
+## V 0.01
 
 This repository contains a script that is meant to be packaged and delivered to AWS Lambda to periodically collect Call of Duty Modern Warfare data via their RapidAPI interface. 
 
